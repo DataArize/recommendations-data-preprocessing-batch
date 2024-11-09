@@ -1,0 +1,56 @@
+name: INFRASTRUCTURE-PROVISIONING
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: Infrastructure Setup
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_project_id: ${{ secrets.PROJECT_ID }}
+      TF_VAR_project_region: ${{ secrets.PROJECT_REGION }}
+      TF_VAR_repository_name: ${{ secrets.REPOSITORY_NAME }}
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_FEDERATION }}
+
+      - name: Set Directory Based on Branch
+        id: setdir
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "DIR=./terraform/environments/development" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+            echo "DIR=./terraform/environments/development" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/test" ]]; then
+            echo "DIR=./terraform/environments/development" >> $GITHUB_ENV
+          else
+            echo "DIR=./terraform/environments/development" >> $GITHUB_ENV
+          fi
+
+      - name: Terraform Init
+        working-directory: ${{ env.DIR }}
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.DIR }}
+        run: terraform plan -out=tfplan -detailed-exitcode
+
+      - name: Terraform Apply
+        working-directory: ${{ env.DIR }}
+        run: |
+          terraform apply -auto-approve tfplan
