@@ -69,10 +69,10 @@ jobs:
 
       - name: Build Image
         run: |
-          docker build . --file Dockerfile --tag ${{ secrets.GCP_IMAGE_TAG }}
+          docker build . --file Dockerfile --tag gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.GCP_IMAGE_NAME }}
       
       - name: Push Image
-        run: docker push ${{ secrets.GCP_IMAGE_TAG }}
+        run: docker push gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.GCP_IMAGE_NAME }}
 
       - name: Slack notification
         uses: 8398a7/action-slack@v3
