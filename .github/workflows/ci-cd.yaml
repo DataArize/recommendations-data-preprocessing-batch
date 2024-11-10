@@ -36,12 +36,19 @@ jobs:
           ./gradlew jacocoTestReport
         if: github.event_name != 'workflow_dispatch'
 
+      - name: Upload Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report.xml
+          path: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+        if: github.event_name != 'workflow_dispatch'
+
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.7.1
         with:
           paths: |
-            ${{ github.workspace }}/**/build/reports/jacoco/**/jacocoTestReport.xml
+            ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 60
