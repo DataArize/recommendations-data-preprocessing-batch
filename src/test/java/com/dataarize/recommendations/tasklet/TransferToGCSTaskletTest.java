@@ -21,8 +21,10 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.net.URL;
+import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -93,8 +95,11 @@ class TransferToGCSTaskletTest {
 
     @Test
     void givenValidParameters_whenExecuteCalled_thenCompleteSuccessfully() throws Exception {
+        URL resource = getClass().getClassLoader().getResource("dummy.txt");
+        assertNotNull(resource, "File not found in test resources");
+        String filePath = Paths.get(resource.toURI()).toString();
         ReflectionTestUtils.setField(tasklet, "outputBucketPath", "mock");
-        ReflectionTestUtils.setField(tasklet, "tempOutputFilePath", "/Users/amith/PycharmProjects/recommendations/src/test/resources/dummy.txt");
+        ReflectionTestUtils.setField(tasklet, "tempOutputFilePath", filePath);
         Mockito.when(mockStorage.create(any(BlobInfo.class), any(byte[].class))).thenReturn(blob);
         RepeatStatus execute = tasklet.execute(stepContribution, chunkContext);
         Mockito.verify(mockStorage, Mockito.atLeastOnce()).create(any(BlobInfo.class), any(byte[].class));
@@ -104,7 +109,10 @@ class TransferToGCSTaskletTest {
     @Test
     void givenValidParameters_whenExecuteCalled_thenThrowException() throws Exception {
         ReflectionTestUtils.setField(tasklet, "outputBucketPath", "mock");
-        ReflectionTestUtils.setField(tasklet, "tempOutputFilePath", "/Users/amith/PycharmProjects/recommendations/src/test/resources/dummy.txt");
+        URL resource = getClass().getClassLoader().getResource("dummy.txt");
+        assertNotNull(resource, "File not found in test resources");
+        String filePath = Paths.get(resource.toURI()).toString();
+        ReflectionTestUtils.setField(tasklet, "tempOutputFilePath", filePath);
         Mockito.when(mockStorage.create(any(BlobInfo.class), any(byte[].class))).thenThrow(new StorageException(1, "MOCK"));
         assertThrows(TransferFailedException.class, () -> tasklet.execute(stepContribution, chunkContext));
         Mockito.verify(mockStorage, Mockito.atLeastOnce()).create(any(BlobInfo.class), any(byte[].class));

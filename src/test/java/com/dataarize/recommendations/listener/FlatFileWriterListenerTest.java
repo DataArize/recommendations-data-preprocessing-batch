@@ -10,7 +10,11 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,14 +39,20 @@ class FlatFileWriterListenerTest {
     }
 
     @Test
-    void givenNonEmptyOutputFile_whenAfterWriteCalled_thenLogSuccess() throws IOException {
-        ReflectionTestUtils.setField(flatFileWriterListener, "outputPath", "/Users/amith/PycharmProjects/recommendations/src/test/resources/dummy.txt");
+    void givenNonEmptyOutputFile_whenAfterWriteCalled_thenLogSuccess() throws IOException, URISyntaxException {
+        URL resource = getClass().getClassLoader().getResource("dummy.txt");
+        assertNotNull(resource, "File not found in test resources");
+        String filePath = Paths.get(resource.toURI()).toString();
+        ReflectionTestUtils.setField(flatFileWriterListener, "outputPath", filePath);
         flatFileWriterListener.afterWrite(chunk);
     }
 
     @Test
-    void givenNonEmptyOutputFile_whenAfterWriteCalled_thenLogWarn() throws IOException {
-        ReflectionTestUtils.setField(flatFileWriterListener, "outputPath", "/Users/amith/PycharmProjects/recommendations/src/test/resources/mock.txt");
+    void givenNonEmptyOutputFile_whenAfterWriteCalled_thenLogWarn() throws IOException, URISyntaxException {
+        URL resource = getClass().getClassLoader().getResource("dummy.txt");
+        assertNotNull(resource, "File not found in test resources");
+        String filePath = Paths.get(resource.toURI()).toString();
+        ReflectionTestUtils.setField(flatFileWriterListener, "outputPath", filePath);
         flatFileWriterListener.afterWrite(chunk);
     }
 
