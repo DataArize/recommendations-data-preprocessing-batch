@@ -33,6 +33,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew jacocoTestReport
+        if: github.event_name != 'workflow_dispatch'
 
       - name: Add coverage to PR
         id: jacoco
@@ -46,7 +47,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
 
       - name: Fail PR if overall coverage is less than 80%
-        if: github.event_name != 'workflow_dispatch' &&  ${{ steps.jacoco.outputs.coverage-overall < 80.0 }}
+        if: github.event_name == 'pull_request' && ${{ steps.jacoco.outputs.coverage-overall < 80.0 }}
         uses: actions/github-script@v6
         with:
           script: |
