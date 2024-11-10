@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -45,7 +46,12 @@ public class PreProcessorStepListener implements StepExecutionListener {
      * The {@link Storage} service used to interact with Google Cloud Storage.
      * This instance is used to validate the existence and size of the input file.
      */
-    private Storage storage;
+    private final Storage storage;
+
+    @Autowired
+    public PreProcessorStepListener(Storage storage) {
+        this.storage = storage;
+    }
 
     /**
      * This method is called before the step execution begins. It validates the input file specified in the job parameters.
@@ -61,7 +67,6 @@ public class PreProcessorStepListener implements StepExecutionListener {
                     throw new MissingFilePathException(ExceptionMessages.MISSING_INPUT_FILE_PATH);
                 });
         log.info("Starting to read file: {}", filePathParameter);
-        storage = StorageOptions.getDefaultInstance().getService();
         String bucketName = filePathParameter.split("/")[2];
         String blobName = filePathParameter.substring(filePathParameter.indexOf(bucketName) + bucketName.length() + 1);
         Blob blob = storage.get(bucketName, blobName);

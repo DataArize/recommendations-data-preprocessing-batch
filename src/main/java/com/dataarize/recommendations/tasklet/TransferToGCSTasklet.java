@@ -6,7 +6,6 @@ import com.dataarize.recommendations.exceptions.MissingFilePathException;
 import com.dataarize.recommendations.exceptions.TransferFailedException;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.storage.*;
-import com.google.rpc.Help;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
@@ -14,7 +13,7 @@ import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.threeten.bp.Duration;
@@ -53,6 +52,13 @@ public class TransferToGCSTasklet implements Tasklet, StepExecutionListener {
     private String outputBucketPath;
     private String tempOutputFilePath;
 
+    private final Storage storage;
+
+    @Autowired
+    public TransferToGCSTasklet(Storage storage) {
+        this.storage = storage;
+    }
+
     /**
      * Executes the task of transferring the file from the local filesystem to GCS.
      * This method uploads the file to the specified bucket and handles retries for failed uploads.
@@ -64,22 +70,14 @@ public class TransferToGCSTasklet implements Tasklet, StepExecutionListener {
      */
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-        Storage service = StorageOptions.newBuilder()
-                .setRetrySettings(RetrySettings.newBuilder()
-                        .setMaxAttempts(5)
-                        .setInitialRetryDelay(Duration.ofSeconds(1))
-                        .setMaxRetryDelay(Duration.ofSeconds(10))
-                        .setRetryDelayMultiplier(1.5)
-                        .build())
-                .build()
-                .getService();
+
         File file = ResourceUtils.getFile(tempOutputFilePath);
         String blobPath = HelperConstants.TARGET_DIRECTORY + file.getName();
         BlobId blobId = BlobId.of(outputBucketPath, blobPath);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try (InputStream inputStream = new FileInputStream(file)) {
             byte[] fileContent = inputStream.readAllBytes();
-            service.create(blobInfo, fileContent);
+            storage.create(blobInfo, fileContent);
         } catch (StorageException e) {
             log.error("Failed to upload file to GCS: {}", e.getMessage(), e);
             throw new TransferFailedException(e.getMessage());
