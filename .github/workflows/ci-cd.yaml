@@ -32,21 +32,22 @@ jobs:
       - name: Run Coverage
         run: |
           chmod +x gradlew
-          ./gradlew testCoverage
+          ./gradlew jacocoTestReport
+        if: github.event_name != 'workflow_dispatch'
 
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.7.1
         with:
           paths: |
-            ${{ github.workspace }}/**/build/reports/jacoco/prodNormalDebugCoverage/prodNormalDebugCoverage.xml,
-            ${{ github.workspace }}/**/build/reports/jacoco/**/debugCoverage.xml
+            ${{ github.workspace }}/**/build/reports/jacoco/**/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 60
+        if: github.event_name != 'workflow_dispatch'
 
       - name: Fail PR if overall coverage is less than 80%
-        if: ${{ steps.jacoco.outputs.coverage-overall < 80.0 }}
+        if: ${{ github.event_name == 'pull_request' &&  steps.jacoco.outputs.coverage-overall < 80.0 }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -55,8 +56,8 @@ jobs:
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
         with:
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_FEDERATION }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -69,10 +70,10 @@ jobs:
 
       - name: Build Image
         run: |
-          docker build . --file Dockerfile --tag gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.GCP_IMAGE_NAME }}
+          docker build . --file Dockerfile --tag ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
       
       - name: Push Image
-        run: docker push gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.GCP_IMAGE_NAME }}
+        run: docker push ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
 
       - name: Slack notification
         uses: 8398a7/action-slack@v3
@@ -83,15 +84,9 @@ jobs:
             {
               attachments: [{
                 color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `Action Name: ${process.env.AS_WORKFLOW}\nJOB Name: ${process.env.AS_JOB} (${process.env.AS_COMMIT})\n Repository Name:${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+                text: `Action Name: ${process.env.AS_WORKFLOW}\n Repository Name:${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
               }]
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: always()
-          
-      
-
-
-
-
