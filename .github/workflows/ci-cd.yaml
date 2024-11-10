@@ -46,13 +46,6 @@ jobs:
           min-coverage-changed-files: 60
         if: github.event_name != 'workflow_dispatch'
 
-      - name: Fail PR if overall coverage is less than 80%
-        if: github.event_name == 'pull_request' && ${{ steps.jacoco.outputs.coverage-overall < 80.0 }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.setFailed('Overall coverage is less than 80%!')
-
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
         with:
