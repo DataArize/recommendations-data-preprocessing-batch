@@ -84,7 +84,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
+            asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job
 
       - name: Slack notification
         uses: 8398a7/action-slack@v3
