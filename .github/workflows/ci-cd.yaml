@@ -86,6 +86,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-
 
+      - name: Enable BuildKit
+        run: |
+          echo "{ \"experimental\": true }" | sudo tee /etc/docker/daemon.json
+          echo "DOCKER_BUILDKIT=1" | tee -a /etc/environment
+          sudo systemctl restart docker
+
       - name: Build Image
         run: |
           docker buildx build --file Dockerfile \
