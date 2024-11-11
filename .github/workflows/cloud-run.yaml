@@ -33,34 +33,9 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_FEDERATION }}
 
-      - name: Execute Cloud Run Job
-        id: execute_job
+      - name: Run Job
         run: |
-          EXECUTION_ID=$(gcloud beta run jobs execute ${{ secrets.JOB_NAME }} --region ${{ secrets.PROJECT_REGION }} --format="value(id)")
-          echo "EXECUTION_ID=${EXECUTION_ID}" >> $GITHUB_ENV
-
-      - name: Check Job Status
-        id: check_status
-        run: |
-          STATUS=""
-          while [[ "$STATUS" != "SUCCEEDED" && "$STATUS" != "FAILED" ]]; do
-            STATUS=$(gcloud beta run jobs executions describe "${{ env.EXECUTION_ID }}" \
-              --region asia-south1 --format="value(status.state)")
-            echo "Current status: $STATUS"
-            if [[ "$STATUS" == "FAILED" ]]; then
-              echo "Job failed!"
-              exit 1
-            fi
-            sleep 5
-          done
-          if [[ "$STATUS" != "SUCCEEDED" ]]; then
-            echo "Job did not succeed!"
-            exit 1
-          fi
-
-      - name: Notify Success
-        if: success()
-        run: echo "Job succeeded!"
+          gcloud beta run jobs execute ${{ secrets.JOB_NAME }} --region ${{ secrets.PROJECT_REGION }}
 
       - name: Slack notification
         uses: 8398a7/action-slack@v3
