@@ -88,7 +88,7 @@ jobs:
 
       - name: Build Image
         run: |
-          docker buildx build . --file Dockerfile \
+          docker buildx build --file Dockerfile \
           --tag ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }} \
           --cache-from=type=registry,ref=${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/cache:latest \
           --cache-to=type=registry,ref=${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/cache:latest,mode=max \
