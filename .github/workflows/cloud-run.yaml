@@ -1,0 +1,39 @@
+name: ClOUD-RUN
+on:
+  push:
+    branches: [ "main", "develop", "releases/**", "hotfix/**" ]
+  workflow_dispatch:
+
+
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  deploy_to_artifactory:
+    name: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Install Dependencies
+        run: ./gradlew build --no-daemon
+
+      - name: Run Job
+        run: |  
+          gcloud run deploy recommendations-job \
+          --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
+          --platform managed \
+          --region ${{ secrets.PROJECT_REGION }} \
+          --args="arg1","arg2","arg3"
+
