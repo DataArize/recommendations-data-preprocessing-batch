@@ -27,6 +27,12 @@ jobs:
       - name: Install Dependencies
         run: ./gradlew build --no-daemon
 
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_FEDERATION }}
+
       - name: Run Job
         run: |
           gcloud run deploy recommendations-job \
