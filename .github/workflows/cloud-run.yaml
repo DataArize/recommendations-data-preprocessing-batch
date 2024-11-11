@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  deploy_to_artifactory:
+  deploy_to_cloud_run:
     name: CI-CD
     runs-on: ubuntu-latest
     steps:
@@ -30,10 +30,11 @@ jobs:
         run: ./gradlew build --no-daemon
 
       - name: Run Job
-        run: |  
+        run: |
           gcloud run deploy recommendations-job \
           --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
           --platform managed \
           --region ${{ secrets.PROJECT_REGION }} \
-          --args="arg1","arg2","arg3"
+          --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
+      
 
