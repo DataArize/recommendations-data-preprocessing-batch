@@ -77,9 +77,22 @@ jobs:
         run: |-
           gcloud auth configure-docker ${{ secrets.PROJECT_REGION }}-docker.pkg.dev --quiet
 
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
       - name: Build Image
         run: |
-          docker build . --file Dockerfile --tag ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
+          docker buildx build . --file Dockerfile \
+          --tag ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }} \
+          --cache-from=type=registry,ref=${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/cache:latest \
+          --cache-to=type=registry,ref=${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/cache:latest,mode=max \
+          --push .
 
       - name: Push Image
         run: docker push ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
