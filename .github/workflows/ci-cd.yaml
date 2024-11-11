@@ -75,7 +75,7 @@ jobs:
 
       - name: Install beta components
         run: |
-          gcloud components install beta -Y
+          gcloud components install beta --quiet
 
       - name: Docker Auth
         run: |-
