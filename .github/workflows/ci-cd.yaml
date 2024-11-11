@@ -73,6 +73,10 @@ jobs:
         with:
           version: '>= 363.0.0'
 
+      - name: Install beta components
+        run: |
+          gcloud components install beta -Y
+
       - name: Docker Auth
         run: |-
           gcloud auth configure-docker ${{ secrets.PROJECT_REGION }}-docker.pkg.dev --quiet
