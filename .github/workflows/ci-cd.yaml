@@ -84,6 +84,15 @@ jobs:
       - name: Push Image
         run: docker push ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }}
 
+      - name: Deploy Cloud Run Job
+        run: |
+          gcloud beta run jobs create ${{ secrets.JOB_NAME }} \
+          --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
+          --project ${{ secrets.PROJECT_ID }} \
+          --region ${{ secrets.PROJECT_REGION }} \
+          --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
+          --set-env-vars DB_URL=${{ secrets.POSTGRES_DB_URL }},DB_USERNAME=${{ secrets.POSTGRES_DB_USERNAME }},DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }},OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}
+
       - name: Slack notification
         uses: 8398a7/action-slack@v3
         with:
