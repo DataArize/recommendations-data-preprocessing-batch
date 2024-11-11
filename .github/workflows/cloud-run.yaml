@@ -1,7 +1,5 @@
 name: ClOUD-RUN
 on:
-  push:
-    branches: [ "main", "develop", "releases/**", "hotfix/**" ]
   workflow_dispatch:
 
 
@@ -13,7 +11,7 @@ permissions:
 
 jobs:
   deploy_to_cloud_run:
-    name: CI-CD
+    name: CLOUD-RUN-DEPLOY
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
@@ -33,6 +31,7 @@ jobs:
         run: |
           gcloud run deploy recommendations-job \
           --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
+          --project ${{ secrets.PROJECT_ID }} \
           --platform managed \
           --region ${{ secrets.PROJECT_REGION }} \
           --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
