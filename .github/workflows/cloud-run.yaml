@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy_to_cloud_run:
-    name: CLOUD-RUN-DEPLOY
+    name: RUN PRE PROCESSOR JOB
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
@@ -35,10 +35,20 @@ jobs:
 
       - name: Run Job
         run: |
-          gcloud run deploy recommendations-job \
-          --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
-          --project ${{ secrets.PROJECT_ID }} \
-          --platform managed \
-          --region ${{ secrets.PROJECT_REGION }} \
-          --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
-      
+          gcloud beta run jobs execute ${{ secrets.JOB_NAME }} --region ${{ secrets.PROJECT_REGION }}
+
+      - name: Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `Action Name: ${process.env.AS_WORKFLOW}\n Repository Name:${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
