@@ -36,4 +36,3 @@ jobs:
           --region ${{ secrets.PROJECT_REGION }} \
           --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
       
-
