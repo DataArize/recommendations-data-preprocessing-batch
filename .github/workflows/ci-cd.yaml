@@ -100,9 +100,9 @@ jobs:
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-secrets DB_URL=DB_URL \
-            --set-secrets DB_USERNAME=DB_USERNAME \
-            --set-secrets DB_PASSWORD=DB_PASSWORD \
+            --set-secrets DB_URL=DB_URL:latest \
+            --set-secrets DB_USERNAME=DB_USERNAME:latest \
+            --set-secrets DB_PASSWORD=DB_PASSWORD:latest \
             --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           else
@@ -114,9 +114,9 @@ jobs:
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-secrets DB_URL=DB_URL \
-            --set-secrets DB_USERNAME=DB_USERNAME \
-            --set-secrets DB_PASSWORD=DB_PASSWORD \
+            --set-secrets DB_URL=DB_URL:latest \
+            --set-secrets DB_USERNAME=DB_USERNAME:latest \
+            --set-secrets DB_PASSWORD=DB_PASSWORD:latest \
             --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           fi
