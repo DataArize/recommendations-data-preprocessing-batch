@@ -100,7 +100,10 @@ jobs:
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-env-vars "DB_URL=${{ secrets.POSTGRES_DB_URL }},DB_USERNAME=${{ secrets.POSTGRES_DB_USERNAME }},DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }},OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
+            --set-secrets DB_URL=DB_URL \
+            --set-secrets DB_USERNAME=DB_USERNAME \
+            --set-secrets DB_PASSWORD=DB_PASSWORD \
+            --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           else
             echo "Job does not exist, creating a new job..."
@@ -111,7 +114,10 @@ jobs:
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-env-vars "DB_URL=${{ secrets.POSTGRES_DB_URL }},DB_USERNAME=${{ secrets.POSTGRES_DB_USERNAME }},DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }},OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
+            --set-secrets DB_URL=DB_URL \
+            --set-secrets DB_USERNAME=DB_USERNAME \
+            --set-secrets DB_PASSWORD=DB_PASSWORD \
+            --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           fi
 
