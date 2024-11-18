@@ -94,24 +94,32 @@ jobs:
           if [ "$JOB_EXISTS" != "not found" ]; then
             echo "Job already exists, updating..."
             gcloud beta run jobs update ${{ secrets.JOB_NAME }} \
-            --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} \
+            --image ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }} \
             --project ${{ secrets.PROJECT_ID }} \
             --task-timeout 240m \
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-env-vars "DB_URL=${{ secrets.POSTGRES_DB_URL }},DB_USERNAME=${{ secrets.POSTGRES_DB_USERNAME }},DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }},OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
+            --set-secrets DB_URL=DB_URL:latest \
+            --set-secrets DB_USERNAME=DB_USERNAME:latest \
+            --set-secrets DB_PASSWORD=DB_PASSWORD:latest \
+            --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           else
             echo "Job does not exist, creating a new job..."
             gcloud beta run jobs create ${{ secrets.JOB_NAME }} \
-            --image asia-south1-docker.pkg.dev/architect-learning-435310/recommendations-engine/recommendations-pre-processor-job \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} \
+            --image ${{ secrets.PROJECT_REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ secrets.REPOSITORY_NAME }}/${{ secrets.GCP_IMAGE_NAME }} \
             --project ${{ secrets.PROJECT_ID }} \
             --task-timeout 240m \
             --cpu 2 \
             --memory 4Gi \
             --region ${{ secrets.PROJECT_REGION }} \
-            --set-env-vars "DB_URL=${{ secrets.POSTGRES_DB_URL }},DB_USERNAME=${{ secrets.POSTGRES_DB_USERNAME }},DB_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }},OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
+            --set-secrets DB_URL=DB_URL:latest \
+            --set-secrets DB_USERNAME=DB_USERNAME:latest \
+            --set-secrets DB_PASSWORD=DB_PASSWORD:latest \
+            --set-env-vars "OUTPUT_PATH=${{ secrets.OUTPUT_PATH }}" \
             --args="${{ secrets.GCP_STORAGE_BUCKET_INPUT_PATH }}","${{ secrets.GCP_STORAGE_BUCKET_NAME }}"
           fi
 
